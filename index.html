@@ -4,14 +4,41 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles/style.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <title>Document</title>
+  <title>TicTacToe</title>
 </head>
 <body>
-  <div class="thing">PP</div>
+  <h1 class="main-title">TIC TAC TOE</h1>
 
-  <script>
-    $('.thing').hide()
-  </script>  
+  <div class="board-container">
+
+    <div class="row-container" id="top">
+      <div class="row-one square" id="board[0][0]"></div>
+      <div class="row-one square" id="board[0][1]"></div>
+      <div class="row-one square" id="board[0][2]"></div>
+    </div>
+
+    <div class="row-container" id="mid">
+      <div class="row-two square" id="board[1][0]"></div>
+      <div class="row-two square" id="board[1][1]"></div>
+      <div class="row-two square" id="board[1][2]"></div>
+    </div>
+
+    <div class="row-container" id="bot">
+      <div class="row-three square" id="board[2][0]"></div>
+      <div class="row-three square" id="board[2][1]"></div>
+      <div class="row-three square" id="board[2][2]"></div>
+    </div>
+  </div>
+
+  <div class="ui-container">
+    <div class="scoreboard"></div>
+
+    <button class="player" id="pOne">P1</button>  
+    <button class="player" id="pTwo">P2</button>  
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
