@@ -1,9 +1,12 @@
 const gameBoard = (() => {
-  let board = [ 
-    [ 0, 0, 0],
-    [ 0, 0, 0],
-    [ 0, 0, 0]
+  const nBoard = [ 
+    ['','',''],
+    ['','',''],
+    ['','','']
   ]
+  let turn = 0
+  const playerPieces = ['x', 'o'];
+
   function getRowIds() {
     const current = document.getElementsByClassName('board-container')[0].children
     let result = []
@@ -22,58 +25,94 @@ const gameBoard = (() => {
       const currentRow = getRow(rowIdList[row])
   
       for (let cell in array[row]){
-        const current = array[row][cell] //current cell content in given array
-        currentRow.children[cell].innerHTML = current
+        //matches HTML with array
+        currentRow.children[cell].children[0].innerHTML = array[row][cell]
       }
     }
   }
+  function newBoard() {
+    return nBoard
+  }
+  return {
+    getRowIds,
+    getRow,
+    renderBoard,
+    newBoard
+  }
+})();
+
+const game = (() => {
+  let board = [ 
+    ['','',''],
+    ['','',''],
+    ['','','']
+  ];
+  //connect restart button
+  (() => {
+    const restartBut = document.getElementById('restart')
+    restartBut.addEventListener('click', newGame)
+  })();
+  //new game
   function newGame() {
-    const newBoard = [ 
-      [ 0, 0, 0],
-      [ 0, 0, 0],
-      [ 0, 0, 0]
-    ]
+    resetBoard = gameBoard.newBoard()
+    board = resetBoard
+    gameBoard.renderBoard(board)
+    game.board = board
+  }
+  //location is each square's id && player is x or o mark
+  function changeBoard(location, playerPiece) {
+    const rowNum = parseInt(location[0])
+    const colNum = parseInt(location[1])
 
-    board = newBoard
+    board[rowNum][colNum] = playerPiece
+    
+    gameBoard.renderBoard(board)
+  }
+  //add eventListeners to all grid cells when player picks a team
+  function initEvLis(piece){
+    const rowIdList = gameBoard.getRowIds()
 
-    const rowIdList = getRowIds()
-  
-    for (let row in newBoard) {
-      const currentRow = getRow(rowIdList[row])
-  
-      for (let cell in newBoard[row]){
-        const current = newBoard[row][cell] 
-        const currentCell = currentRow.children[cell]
+    for (let row in board) {
+      const currentRow = gameBoard.getRow(rowIdList[row])
 
-        currentCell.addEventListener('click', function(){ //f(n) needs to be player dependent
-          currentCell.innerHTML = 'x'
+      for (let cell in board[row]) {
+        const currentCell = currentRow.children[cell];
+
+        currentCell.addEventListener('click', function(e){
+          changeBoard(this.id, piece)
         })
       }
     }
   }
-  function changeBoard() {
-    board[0][0] = 1
-    console.log(board)
-  }
-  // function markBoard(player, ){}
-
   return {
-    changeBoard,
     newGame,
-    renderBoard,
+    initEvLis
   }
 })();
 
-// const playerFactory = (player) => {
-//   const move = () => {
-//     //mark in GB array
-//   }
-//   return {
-//     player,
-//     move
-//   }
-// }
 
+const playerFactory = (player) => {
 
+  //pick a piece
+  function pickPiece() {
+  }
+  //creates eventListeners on game squares to input the
+  // the player = their piece
+  game.initEvLis(player)
+  
 
+  return {
+    player,
+  }
+}
+
+const playerOne = document.getElementById('pOne')
+const playerTwo = document.getElementById('pTwo')
+
+playerOne.addEventListener('click', function(){
+  Object.create(playerFactory('X'))
+})
+playerTwo.addEventListener('click', function(){
+  Object.create(playerFactory('O'))
+})
 

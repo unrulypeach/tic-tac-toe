@@ -14,29 +14,31 @@
   <div class="board-container">
 
     <div class="row-container" id="top">
-      <div class="row-one square" id="board[0][0]"></div>
-      <div class="row-one square" id="board[0][1]"></div>
-      <div class="row-one square" id="board[0][2]"></div>
+      <div class="row-one square" id="00"><p></p></div>
+      <div class="row-one square" id="01"><p></p></div>
+      <div class="row-one square" id="02"><p></p></div>
     </div>
 
     <div class="row-container" id="mid">
-      <div class="row-two square" id="board[1][0]"></div>
-      <div class="row-two square" id="board[1][1]"></div>
-      <div class="row-two square" id="board[1][2]"></div>
+      <div class="row-two square" id="10"><p></p></div>
+      <div class="row-two square" id="11"><p></p></div>
+      <div class="row-two square" id="12"><p></p></div>
     </div>
 
     <div class="row-container" id="bot">
-      <div class="row-three square" id="board[2][0]"></div>
-      <div class="row-three square" id="board[2][1]"></div>
-      <div class="row-three square" id="board[2][2]"></div>
+      <div class="row-three square" id="20"><p></p></div>
+      <div class="row-three square" id="21"><p></p></div>
+      <div class="row-three square" id="22"><p></p></div>
     </div>
   </div>
 
   <div class="ui-container">
     <div class="scoreboard"></div>
 
-    <button class="player" id="pOne">P1</button>  
-    <button class="player" id="pTwo">P2</button>  
+    <button class="player" id="pOne">X</button>  
+    <button class="player" id="pTwo">O</button> 
+    
+    <button id="restart">restart</button>
   </div>
 
   <script src="script.js"></script>
