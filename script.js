@@ -5,8 +5,6 @@ const gameBoard = (() => {
     ['','','']
   ]
   let turn = 0
-  const playerPieces = ['x', 'o'];
-
   function getRowIds() {
     const current = document.getElementsByClassName('board-container')[0].children
     let result = []
@@ -15,14 +13,11 @@ const gameBoard = (() => {
     }
     return result
   }
-  function getRow(rowId) {
-    return document.getElementById(rowId)
-  }
   function renderBoard(array) {
     const rowIdList = getRowIds()
   
     for (let row in array) {
-      const currentRow = getRow(rowIdList[row])
+      const currentRow = document.getElementById(rowIdList[row])
   
       for (let cell in array[row]){
         //matches HTML with array
@@ -35,12 +30,10 @@ const gameBoard = (() => {
   }
   return {
     getRowIds,
-    getRow,
     renderBoard,
     newBoard
   }
 })();
-
 const game = (() => {
   let board = [ 
     ['','',''],
@@ -73,7 +66,7 @@ const game = (() => {
     const rowIdList = gameBoard.getRowIds()
 
     for (let row in board) {
-      const currentRow = gameBoard.getRow(rowIdList[row])
+      const currentRow = document.getElementById(rowIdList[row])
 
       for (let cell in board[row]) {
         const currentCell = currentRow.children[cell];
@@ -89,8 +82,6 @@ const game = (() => {
     initEvLis
   }
 })();
-
-
 const playerFactory = (player) => {
 
   //pick a piece
@@ -99,7 +90,6 @@ const playerFactory = (player) => {
   //creates eventListeners on game squares to input the
   // the player = their piece
   game.initEvLis(player)
-  
 
   return {
     player,
