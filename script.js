@@ -64,15 +64,24 @@ const gameBoard = (() => {
       const p11 = game.returnPlayerPiece(p1);
       const p12 = game.returnPlayerTurnNum(p1);
       p1x.initEl( p11, p12)
+      //immediately create bot after P1 based off of P1 pieces
+      //clicking P2 pieces would overwrite bot
+      const bot = Object.create(ai('O', 1));
+      game.setPlayer(bot, 2)
+
       dimUnselected(playerOneX)
     })
     playerOneO.addEventListener('click', function(){
-      let p1o = Object.create(playerFactory('O', 0))
+      let p1o = Object.create(playerFactory('O', 1))
       game.setPlayer(p1o, 1)
       const p1 = game.returnPlayer(1);
       const p11 = game.returnPlayerPiece(p1);
       const p12 = game.returnPlayerTurnNum(p1);
       p1o.initEl( p11, p12)
+
+      const bot = Object.create(ai('X', 0))
+      game.setPlayer(bot, 1)
+
       dimUnselected(playerOneO)
     })
     playerTwoX.addEventListener('click', function(){
@@ -94,6 +103,21 @@ const gameBoard = (() => {
       dimUnselected(playerTwoO)
     })
   }
+  function openHelp(){
+    const helpBut = document.getElementById('help')
+    helpBut.addEventListener('click', e => {
+      const helpMenu = document.getElementById('helpMenu')
+      helpMenu.classList.add('helpOn')
+      closeHelp()
+      e.stopImmediatePropagation()
+    })
+  }
+  function closeHelp(){
+    document.addEventListener('click', function(){
+      const helpMenu = document.getElementById('helpMenu')
+      helpMenu.classList.remove('helpOn')
+    })
+  }
   (() => {
     const pOne = document.getElementById("pOne")
     const pTwo = document.getElementById('pTwo');
@@ -102,8 +126,8 @@ const gameBoard = (() => {
     });
     pTwo.addEventListener('click', function(e){
       initPlayerSelection('p2menu')
-    })
-
+    });
+    openHelp()
     createPlayer()
   })();
   return {
@@ -191,7 +215,6 @@ const game = (() => {
     
     gameBoard.renderBoard(board)
 
-    checkWinCon()
     if ((counter.value()) === 0) {
       counter.increment()
       console.log(counter.value)
@@ -199,63 +222,100 @@ const game = (() => {
       counter.decrement()
       console.log(counter.value)
     }
+    checkWinCon()
+
   }
   function initEvLis(piece, yourTurnNum){
     const board = document.getElementById('board')
     board.addEventListener('click', e => {
+
       if(yourTurnNum == counter.value()){
-      changeBoard(e.target.id, piece)
-      e.stopImmediatePropagation()
+
+        changeBoard(e.target.id, piece)
+        const p2player = returnPlayer(2)
+        if( p2player.bot ==  true) {
+          playRand()
+        }
+        // e.stopImmediatePropagation()
       }
     })
   }
+  function displayWinner (piece) {
+    const theBoard = document.getElementById('board')
+    const newP = document.createElement('p')
+    const winPhrase = `${piece} WINS`
+    newP.innerText = winPhrase
+    theBoard.appendChild(newP)
+  }
+  function playRand() {
+    const random1 = Math.floor(Math.random()*3);
+    const random2 = Math.floor(Math.random()*3)
+    if (board[random1][random2] == null){
+      changeBoard((`${random1}${random2}`), player2.piece)
+    }
+  }
   function checkWinCon(){
     //horizontal line --ie. [0][0]-[0][1]-[0][2]
-    for (let row in board) {
+    (() => {
+      for (let row in board) {
       const thirdCell = board[row][2]
-      for (let cell in board[row]) {
-        const currCell = board[row][cell]
-        if (currCell != thirdCell){
-          console.log('no horizontal yet')
-          return
-        } 
-      }
-      console.log(`${thirdCell} won`)
-    }
-    //vertical line --ie. [0][0]-[1][0]-[2][0] 2nd num= 0, 1, ,2
-    for (let row in board) {
-      const thirdCell = board[2][row]
-      for (let col in board) {
-        const currCell = board[cell][row]
-        if (currCell != board[cell][row]){
-          console.log('no vertical yet')
-          return
+        for (let cell in board[row]) {
+          const currCell = board[row][cell]
+          if (currCell != thirdCell){
+            // console.log('no horizontal yet')
+            return
+          } 
         }
-      }
-    console.log(`${thirdCell} won`)
+        if (thirdCell != null){
+          console.log(`${thirdCell} won HORIZONTAL`)
+          displayWinner(thirdCell)
+        }
     }
-    //diagnol line -- [0][0]-[1][1]-[2][2] & [0][2]-[1][1]-[2][0] [up][up] & [up][down]
-    function checkDiag() {
+    })();
+    //vertical line (NOT WORKING) --ie. [0][0]-[1][0]-[2][0] 2nd num= 0, 1, ,2 
+    (() => {
+      for (let row in board) {
+      const thirdCell = board[2][row]
+        for (let col in board) {
+          const currCell = board[col][row]
+          if (currCell != board[col][row]){
+            console.log('no vertical yet')
+            return
+          }
+        }
+      if (thirdCell != null){ 
+        console.log(`${thirdCell} won VERTICAL`)
+        displayWinner(thirdCell)
+      } 
+      }
+    })();
+    //diagonal line -- [0][0]-[1][1]-[2][2] & [0][2]-[1][1]-[2][0] [up][up] & [up][down]
+    (() => {
       for (let row in board) {
         const currCell = board[row][row]
         if (currCell != board[2][2]) {
-          console.log('no right diag yet')
+          console.log('no right diag')
           return
         }
+        if (currCell != null) {
+          console.log(`${board[2][2]} won lrDIAGONAL`)
+          displayWinner(board[2][2])
+        }
       }
-      console.log(`${board[2][2]} is win`)
-    }
-    function leftDiag(){
+    })();
+    (() => {
       const first = board[0][2]
       const second = board[1][1]
       const third = board [2][0]
 
       if (first == second && first == third) {
-        console.log(`${first} is win`)
+        if (first != null){
+          console.log(`${first} won rlDIAGONAL`)
+          displayWinner(first)
+        }
       }
-      console.log('no win')
-    }
-
+      console.log('no left diag')
+    })();
   }
   return {
     setPlayer,
@@ -274,15 +334,24 @@ const playerFactory = (piece, playerTurnNum) => {
     game.initEvLis(piece, playerTurnNum)
   }
 
-  function removeEl(){
-
-  }
-
   return {
+    bot:false,
     piece,
     playerTurnNum,
     initEl
   }
 }
 
-const ai = () => {}
+const ai = (piece, turnNum) => {
+  //random
+  function botMove() {
+
+  }
+
+  return { 
+    bot: true,
+    piece,
+    turnNum
+  }
+}
+
