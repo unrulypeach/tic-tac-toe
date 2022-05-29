@@ -1,9 +1,11 @@
 const gameBoard = (() => {
-  const nBoard = [ 
-    [ null, null, null],
-    [ null, null, null],
-    [ null, null, null]
-  ]
+  function newBoard(aBoard) {
+    for (let out=0; out<3; out++) {
+      for (let ins = 0; ins<3; ins++ ) {
+        aBoard[out][ins] = null
+      }
+    }
+  }
   function getRowIds() {
     const current = document.getElementsByClassName('board-container')[0].children
     let result = []
@@ -23,9 +25,6 @@ const gameBoard = (() => {
         currentRow.children[cell].children[0].innerHTML = array[row][cell]
       }
     }
-  }
-  function newBoard() {
-    return nBoard
   }
   function initPlayerSelection(butn) {
     const hiddenMenu = document.getElementById(butn)
@@ -58,16 +57,15 @@ const gameBoard = (() => {
 
     playerOneX.addEventListener('click', function(){
       let p1x = Object.create(playerFactory('X', 0));
+      let bot = Object.create(ai('O', 1));
+
+      game.setPlayer(bot, 2)
       game.setPlayer(p1x, 1)
       //(piece, playerTurnNum)
       const p1 = game.returnPlayer(1);
       const p11 = game.returnPlayerPiece(p1);
       const p12 = game.returnPlayerTurnNum(p1);
       p1x.initEl( p11, p12)
-      //immediately create bot after P1 based off of P1 pieces
-      //clicking P2 pieces would overwrite bot
-      const bot = Object.create(ai('O', 1));
-      game.setPlayer(bot, 2)
 
       dimUnselected(playerOneX)
     })
@@ -118,6 +116,13 @@ const gameBoard = (() => {
       helpMenu.classList.remove('helpOn')
     })
   }
+  function resetMenuSettings(){
+    const buttonClassNode = document.getElementsByClassName('playerOpts')
+    for (let i = 0; i<4; i++) {
+      const currentIt = buttonClassNode[i]
+      currentIt.classList.remove('dim')
+    }
+  }
   (() => {
     const pOne = document.getElementById("pOne")
     const pTwo = document.getElementById('pTwo');
@@ -133,7 +138,8 @@ const gameBoard = (() => {
   return {
     getRowIds,
     renderBoard,
-    newBoard
+    newBoard,
+    resetMenuSettings
   }
 })();
 const counter = (function() {
@@ -159,7 +165,6 @@ const counter = (function() {
     reset
   }
 })();
-
 const game = (() => {
   let board = [ 
     [ null, null, null],
@@ -168,6 +173,7 @@ const game = (() => {
   ]
   let player1 = null;
   let player2 = null;
+
   function setPlayer( playerObj, playerNum) {
     if (playerNum == 1) {
       player1 = playerObj
@@ -200,11 +206,14 @@ const game = (() => {
     restartBut.addEventListener('click', newGame)
   })();
   function newGame() {
-    resetBoard = gameBoard.newBoard()
-    board = resetBoard
+    gameBoard.newBoard(board)
     gameBoard.renderBoard(board)
-    game.board = board
+    cloneRemoveEvLis()
     counter.reset()
+    hideWinner()
+    player1 = null
+    player2 = null
+    gameBoard.resetMenuSettings()
   }
   //location is each square's id && player is x or o mark
   function changeBoard(location, playerPiece) {
@@ -217,107 +226,101 @@ const game = (() => {
 
     if ((counter.value()) === 0) {
       counter.increment()
-      console.log(counter.value)
     } else {
       counter.decrement()
-      console.log(counter.value)
     }
-    checkWinCon()
-
   }
-  function initEvLis(piece, yourTurnNum){
+  function initEvLis(piece, yourTurnNum) {
     const board = document.getElementById('board')
     board.addEventListener('click', e => {
 
       if(yourTurnNum == counter.value()){
 
         changeBoard(e.target.id, piece)
-        const p2player = returnPlayer(2)
-        if( p2player.bot ==  true) {
+        checkWinCon()
+
+        if( (returnPlayer(2).bot) ==  true) {
           playRand()
+          checkWinCon()
+
         }
-        // e.stopImmediatePropagation()
+        e.stopImmediatePropagation()
       }
     })
   }
+  function cloneRemoveEvLis() {
+    const boardElement= document.getElementById('board')
+    const newBoardElement = boardElement.cloneNode(true);
+    boardElement.parentNode.replaceChild(newBoardElement, boardElement)
+  }
   function displayWinner (piece) {
-    const theBoard = document.getElementById('board')
-    const newP = document.createElement('p')
+    const phraseBox = document.getElementById('winningPhrase')
     const winPhrase = `${piece} WINS`
-    newP.innerText = winPhrase
-    theBoard.appendChild(newP)
+    phraseBox.innerText = winPhrase
+    
+    const theBoard = document.getElementById('winner')
+    theBoard.classList.add('on')
+  }
+  function hideWinner() {
+    const theBoard = document.getElementById('winner')
+    theBoard.classList.remove('on')
   }
   function playRand() {
     const random1 = Math.floor(Math.random()*3);
     const random2 = Math.floor(Math.random()*3)
-    if (board[random1][random2] == null){
+    if (board[random1][random2] === null){
       changeBoard((`${random1}${random2}`), player2.piece)
+    } else {
+      playRand()
     }
   }
   function checkWinCon(){
     //horizontal line --ie. [0][0]-[0][1]-[0][2]
-    (() => {
-      for (let row in board) {
-      const thirdCell = board[row][2]
-        for (let cell in board[row]) {
-          const currCell = board[row][cell]
-          if (currCell != thirdCell){
-            // console.log('no horizontal yet')
-            return
-          } 
+    for (let row=0; row<3; row++) {
+      const compare = board[row][2]
+      let counter = 0
+      for (let col=0; col<3; col++) {
+        if (compare === board[row][col] && compare != null){
+          counter += 1
+        } else {
+          break 
         }
-        if (thirdCell != null){
-          console.log(`${thirdCell} won HORIZONTAL`)
+        if (counter >= 2) {
+          displayWinner(compare)
+        }
+      }
+    }
+    // vertical line --ie. [0][0]-[1][0]-[2][0]
+    for (let col in board) {
+      const thirdCell = board[2][col]
+      let counter = 0
+      for (let row in board) {
+        if (thirdCell === board[row][col] && thirdCell != null){
+          counter += 1
+        } else {
+          break
+        }
+        if (counter >= 2) {
           displayWinner(thirdCell)
         }
+      }
     }
-    })();
-    //vertical line (NOT WORKING) --ie. [0][0]-[1][0]-[2][0] 2nd num= 0, 1, ,2 
-    (() => {
-      for (let row in board) {
-      const thirdCell = board[2][row]
-        for (let col in board) {
-          const currCell = board[col][row]
-          if (currCell != board[col][row]){
-            console.log('no vertical yet')
-            return
-          }
-        }
-      if (thirdCell != null){ 
-        console.log(`${thirdCell} won VERTICAL`)
-        displayWinner(thirdCell)
-      } 
+    // //diagonal line (NotWork)-- [0][0]-[1][1]-[2][2] & [0][2]-[1][1]-[2][0] [up][up] & [up][down]
+    for (let row in board) {
+      const currCell = board[row][row]
+      if (currCell != board[2][2] || currCell === null) {
+        break
+      } else {
+        displayWinner(currCell)
       }
-    })();
-    //diagonal line -- [0][0]-[1][1]-[2][2] & [0][2]-[1][1]-[2][0] [up][up] & [up][down]
-    (() => {
-      for (let row in board) {
-        const currCell = board[row][row]
-        if (currCell != board[2][2]) {
-          console.log('no right diag')
-          return
-        }
-        if (currCell != null) {
-          console.log(`${board[2][2]} won lrDIAGONAL`)
-          displayWinner(board[2][2])
-        }
-      }
-    })();
-    (() => {
-      const first = board[0][2]
-      const second = board[1][1]
-      const third = board [2][0]
+    }
 
-      if (first == second && first == third) {
-        if (first != null){
-          console.log(`${first} won rlDIAGONAL`)
-          displayWinner(first)
-        }
-      }
-      console.log('no left diag')
-    })();
+    if (board[0][2] != null && board[0][2] === board[1][1] && board[0][2] === board [2][0]) {
+      displayWinner(board[0][2])
+    }
   }
   return {
+    board,  
     setPlayer,
     resetPlayers,
     returnPlayer,
@@ -343,10 +346,6 @@ const playerFactory = (piece, playerTurnNum) => {
 }
 
 const ai = (piece, turnNum) => {
-  //random
-  function botMove() {
-
-  }
 
   return { 
     bot: true,
