@@ -1,1 +1,2 @@
-# tic-tac-toe game using HTML/CSS/JS
+# tic-tac-toe game
+This game is built for practicing factory functions
